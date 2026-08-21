@@ -29,19 +29,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               . "FROM users "
               . "WHERE user='" . $user . "' AND password=MD5('" . $pass . "')";
 
-    $res = $conn->query($last_sql);
-
-    if ($res === false) {
-        // ⚠ KWETSBAAR: SQL-fout direct teruggeven aan de browser
-        $message = 'error:SQL-fout: ' . htmlspecialchars($conn->error);
-    } elseif ($res->num_rows > 0) {
-        while ($row = $res->fetch_assoc()) {
-            $rows[] = $row;
+    // PHP 8 gooit een exception bij SQL-fouten; catch zodat de fout zichtbaar wordt
+    try {
+        $res = $conn->query($last_sql);
+        if ($res->num_rows > 0) {
+            while ($row = $res->fetch_assoc()) {
+                $rows[] = $row;
+            }
+            $message = 'success:Welkom, ' . htmlspecialchars($rows[0]['first_name'])
+                     . ' ' . htmlspecialchars($rows[0]['last_name']) . '!';
+        } else {
+            $message = 'error:Ongeldige gebruikersnaam of wachtwoord';
         }
-        $message = 'success:Welkom, ' . htmlspecialchars($rows[0]['first_name'])
-                 . ' ' . htmlspecialchars($rows[0]['last_name']) . '!';
-    } else {
-        $message = 'error:Ongeldige gebruikersnaam of wachtwoord';
+    } catch (mysqli_sql_exception $e) {
+        // ⚠ KWETSBAAR: SQL-fout direct teruggeven aan de browser
+        $message = 'error:SQL-fout: ' . htmlspecialchars($e->getMessage());
     }
 }
 
