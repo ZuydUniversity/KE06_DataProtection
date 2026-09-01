@@ -77,6 +77,7 @@ Staat er geen versie of een versie lager dan 17? Installeer Java dan als volgt:
 ## Scan met het Automation Framework
 
 ZAP heeft een **Automation Framework** waarmee je een volledige geauthenticeerde scan kunt uitvoeren via een configuratiebestand (YAML). Voor DVWA is zo'n plan al beschikbaar. Zie hier: https://www.zaproxy.org/faq/details/setting-up-zap-to-test-dvwa/
+Het gegeven configuratiebestand werkt op een oudere versie. In deze map is een aangepast bestand te vinden dat werkt en is getest op ZAP v.2.17.0.
 
 
 ### Automation Framework zichtbaar maken
@@ -104,13 +105,7 @@ Het Automation Framework is standaard verborgen in ZAP. Voeg het toe via het tab
 
 ### Beveiligingsniveau aanpassen in het plan
 
-In het YAML-bestand kun je het DVWA-beveiligingsniveau instellen. Zoek de volgende regel:
-
-```yaml
-level: low
-```
-
-Verander `low` naar `medium` of `high` en sla het bestand op. Importeer het plan opnieuw en voer het uit. Vergelijk de gevonden kwetsbaarheden met de vorige scan.
+In het YAML-bestand kun je het DVWA-beveiligingsniveau instellen. Onderzoek hoe dit gebeurt en probeer het niveai aan te passen.
 
 > Bij hogere beveiligingsniveaus beschermt DVWA zich beter en zal ZAP minder kwetsbaarheden vinden. Dit illustreert het effect van beveiligingsmaatregelen.
 
