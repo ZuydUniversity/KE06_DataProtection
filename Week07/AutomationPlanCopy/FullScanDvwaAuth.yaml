@@ -2,8 +2,8 @@
 # A simple plan that performs a full authenticated scan against https://github.com/digininja/DVWA.
 # It only uses the standard spider as DVWA is a traditional app.
 # The spider will fail the plan if it finds less that 100 URLs as that implies something way wrong.
-# Various URLs are excluded to prevent the scan from breaking the app, 
-# e.g. by resetting the db or changing the admin password. 
+# Various URLs are excluded to prevent the scan from breaking the app,
+# e.g. by resetting the db or changing the admin password.
 env:
   contexts:
   - name: "DVWA-form"
@@ -12,12 +12,12 @@ env:
     includePaths:
     - "http://localhost:4280.*"
     excludePaths:
-    - "http://localhost:4280/logout.php"
-    - "http://localhost:4280/login.php"
-    - "http://localhost:4280/setup.php"
-    - "http://localhost:4280/security.php"
-    - "http://localhost:4280/vulnerabilities/csrf.*"
-    - "http://localhost:4280/vulnerabilities/cryptography.*"
+    - "http://localhost:4280/logout\\.php"
+    - "http://localhost:4280/login\\.php"
+    - "http://localhost:4280/setup\\.php"
+    - "http://localhost:4280/security\\.php"
+    - "http://localhost:4280/vulnerabilities/csrf/.*"
+    - "http://localhost:4280/vulnerabilities/cryptography/.*"
     authentication:
       method: "form"
       parameters:
@@ -31,10 +31,6 @@ env:
         pollUnits: "seconds"
         pollUrl: "http://localhost:4280/instructions.php"
         pollPostData: ""
-    sessionManagement:
-      method: "headers"
-      parameters:
-        Cookie: "PHPSESSID={%cookie:PHPSESSID%}; security=impossible"
     technology:
       exclude: []
       include: []
@@ -50,6 +46,23 @@ env:
     continueOnFailure: false
   vars: {}
 jobs:
+# The security.php form is protected by DVWA's anti-CSRF user_token, so a raw
+# requestor POST without a valid token is silently rejected by checkToken().
+# Force the level via the Cookie request header instead (dvwaSecurityLevelGet()
+# reads $_COOKIE['security'] directly), leaving PHPSESSID session cookies untouched.
+- parameters:
+    deleteAllRules: false
+  name: "force-security-low"
+  type: "replacer"
+  rules:
+  - description: "Force DVWA security level to low on every request"
+    url: "http://localhost:4280.*"
+    matchType: "req_header_str"
+    # No ^/$ anchors: Cookie isn't always the first header line, so anchored
+    # regex silently never matched and DVWA's default "low" cookie passed through.
+    matchString: "security=(medium|high|impossible)"
+    matchRegex: true
+    replacementString: "security=low"
 - parameters:
     context: "DVWA-form"
     user: "test"
