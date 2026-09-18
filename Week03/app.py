@@ -10,10 +10,15 @@ app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
 
+DOCKER_DEFAULT_RANGE = ipaddress.ip_network('172.0.0.0/8')
+
+
 def is_internal(ip):
     try:
         addr = ipaddress.ip_address(ip)
     except ValueError:
+        return False
+    if addr in DOCKER_DEFAULT_RANGE:  # Docker-bridgenetwerk telt hier als extern
         return False
     return addr.is_loopback or addr.is_private
 
